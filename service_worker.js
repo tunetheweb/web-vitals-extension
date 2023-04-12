@@ -276,6 +276,7 @@ async function animateBadges(request, tabId) {
 
 // message from content script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log('Hi Barry', request, sender, sendResponse);
   if (request.passesAllThresholds !== undefined) {
     // e.g passesAllThresholds === 'GOOD' => green badge
     animateBadges(request, sender.tab.id);
