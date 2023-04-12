@@ -314,7 +314,8 @@
       // of animations or highly-dynamic content, we
       // debounce the broadcast of the metric.
       latestCLS = metric;
-      debouncedCLSBroadcast();
+      // debouncedCLSBroadcast();
+      broadcastMetricsUpdates('cls', metric);
     }, true);
     webVitals.getLCP((metric) => {
       broadcastMetricsUpdates('lcp', metric);
