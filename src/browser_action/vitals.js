@@ -18,6 +18,7 @@
   let latestCLS = {};
   let enableLogging = localStorage.getItem('web-vitals-extension-debug')=='TRUE';
   let enableUserTiming = localStorage.getItem('web-vitals-extension-user-timing')=='TRUE';
+  let reportMetrics = true;
 
   // Core Web Vitals thresholds
   const LCP_THRESHOLD = 2500;
@@ -201,6 +202,8 @@
      * @param {Object} body
      */
   function broadcastMetricsUpdates(metricName, body) {
+    if (!reportMetrics) return;
+
     if (metricName === undefined || badgeMetrics === undefined) {
       return;
     }
@@ -322,6 +325,14 @@
     webVitals.getINP((metric) => {
       broadcastMetricsUpdates('inp', metric);
     }, true);
+
+    document.addEventListener('freeze', (event) => {
+      reportMetrics = false;
+    });
+
+    document.addEventListener('resume', (event) => {
+      reportMetrics = true;
+    });
   }
 
   /**
