@@ -52,6 +52,10 @@ function getWebVitals(tabId) {
 
 // User has navigated to a new URL in a tab
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+
+  // skip urls like "chrome://" to avoid extension error
+  if (tab.url?.startsWith("chrome://")) return undefined;
+
   const tabIdKey = tabId.toString();
 
   if (tab.active) {
