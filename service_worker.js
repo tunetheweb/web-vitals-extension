@@ -41,6 +41,12 @@ function hashCode(str) {
  * @param {Number} tabId
  */
 function getWebVitals(tabId) {
+
+  // The bfcache test in Chrome uses chrome://terms and that throws an error
+  // failing the test as the extension is not allow to access chrome:// urls
+  // So skip that.
+  if (!tab.url?.startsWith("http")) return undefined;
+
   chrome.scripting.executeScript({
     target: { tabId: tabId },
     files: ['src/browser_action/vitals.js'],

@@ -202,7 +202,6 @@
      * @param {Object} body
      */
   function broadcastMetricsUpdates(metricName, body) {
-    return;
     if (!reportMetrics || document.visibilityState === 'hidden') return;
 
     if (metricName === undefined || badgeMetrics === undefined) {
