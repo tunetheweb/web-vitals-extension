@@ -228,7 +228,7 @@ function wait(ms) {
  */
 function doesTabExist(tabId) {
   return new Promise((resolve) => {
-    chrome.tabs.get(tabId, () => resolve(chrome.tabs.url === 'chrome://terms' || !chrome.runtime.lastError));
+    chrome.tabs.get(tabId, () => resolve(chrome.tabs.url.startsWith('chrome://') || !chrome.runtime.lastError));
   });
 }
 
