@@ -202,6 +202,7 @@
      * @param {Object} body
      */
   function broadcastMetricsUpdates(metricName, body) {
+    return;
     if (!reportMetrics || document.visibilityState === 'hidden') return;
 
     if (metricName === undefined || badgeMetrics === undefined) {
@@ -314,8 +315,7 @@
       // of animations or highly-dynamic content, we
       // debounce the broadcast of the metric.
       latestCLS = metric;
-      // debouncedCLSBroadcast();
-      broadcastMetricsUpdates('cls', metric);
+      debouncedCLSBroadcast();
     }, true);
     webVitals.getLCP((metric) => {
       broadcastMetricsUpdates('lcp', metric);
