@@ -53,6 +53,9 @@ function getWebVitals(tabId) {
 // User has navigated to a new URL in a tab
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
+  // skip urls like "chrome://" to avoid extension error
+  if (tab.url?.startsWith("chrome://")) return undefined;
+
   const tabIdKey = tabId.toString();
 
   if (tab.active) {
@@ -225,7 +228,7 @@ function wait(ms) {
  */
 function doesTabExist(tabId) {
   return new Promise((resolve) => {
-    chrome.tabs.get(tabId, () => resolve(!chrome.runtime.lastError));
+    chrome.tabs.get(tabId, () => resolve(chrome.tabs.url === 'chrome://terms' || !chrome.runtime.lastError));
   });
 }
 
