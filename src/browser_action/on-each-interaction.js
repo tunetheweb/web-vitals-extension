@@ -86,6 +86,7 @@ export function onEachInteraction(callback) {
     type: 'event',
     durationThreshold: 0,
     buffered: true,
+    includeSoftNavigationObservations: true,
   });
 
   let recentLoAFs = [];

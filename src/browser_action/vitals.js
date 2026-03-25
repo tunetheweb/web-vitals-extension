@@ -14,7 +14,6 @@
 (async () => {
   const src = chrome.runtime.getURL('src/browser_action/web-vitals.js');
   const webVitals = await import(src);
-  const { onEachInteraction } = await import(chrome.runtime.getURL('src/browser_action/on-each-interaction.js'));
   let overlayClosedForSession = false;
   let latestCLS = {};
   let enableLogging = localStorage.getItem('web-vitals-extension-debug')=='TRUE';
@@ -255,7 +254,7 @@
         formattedValue = secondsFormatter.format(metric.value / 1000);
     }
     console.groupCollapsed(
-      `${LOG_PREFIX} ${metric.name} %c${formattedValue} (${metric.rating})`,
+      `${LOG_PREFIX} ${metric.name} %c${formattedValue} (${metric.rating}) ${metric.navigationURL}`,
       `color: ${RATING_COLORS[metric.rating] || 'inherit'}`
     );
 
@@ -268,16 +267,16 @@
       }
       console.log('LCP element:', metric.attribution.lcpEntry.element);
       console.table([{
-        'LCP sub-part': 'Time to first byte',
+        'LCP subpart': 'Time to first byte',
         'Time (ms)': Math.round(metric.attribution.timeToFirstByte, 0),
       }, {
-        'LCP sub-part': 'Resource load delay',
+        'LCP subpart': 'Resource load delay',
         'Time (ms)': Math.round(metric.attribution.resourceLoadDelay, 0),
       }, {
-        'LCP sub-part': 'Resource load duration',
+        'LCP subpart': 'Resource load duration',
         'Time (ms)': Math.round(metric.attribution.resourceLoadDuration, 0),
       }, {
-        'LCP sub-part': 'Element render delay',
+        'LCP subpart': 'Element render delay',
         'Time (ms)': Math.round(metric.attribution.elementRenderDelay, 0),
       }]);
     }
@@ -291,10 +290,10 @@
       }
       console.log('FCP loadState:', metric.attribution.loadState);
       console.table([{
-        'FCP sub-part': 'Time to first byte',
+        'FCP subpart': 'Time to first byte',
         'Time (ms)': Math.round(metric.attribution.timeToFirstByte, 0),
       }, {
-        'FCP sub-part': 'FCP render delay',
+        'FCP subpart': 'FCP render delay',
         'Time (ms)': Math.round(metric.attribution.firstByteToFCP, 0),
       }]);
     }
@@ -311,23 +310,24 @@
     else if ((metric.name == 'INP'|| metric.name == 'Interaction') && metric.attribution) {
       const eventTarget = metric.attribution.interactionTargetElement;
       console.log('Interaction target:', eventTarget || metric.attribution.interactionTarget);
-      console.log(`Interaction event type: %c${metric.attribution.interactionType}`, 'font-family: monospace');
-
-      // Sub parts are only available for INP events and not Interactions
       if (metric.name == 'INP') {
-        console.table([{
-          'Interaction sub-part': 'Input delay',
-          'Time (ms)': Math.round(metric.attribution.inputDelay, 0),
-        },
-        {
-          'Interaction sub-part': 'Processing duration',
-          'Time (ms)': Math.round(metric.attribution.processingDuration, 0),
-        },
-        {
-          'Interaction sub-part': 'Presentation delay',
-          'Time (ms)': Math.round(metric.attribution.presentationDelay, 0),
-        }]);
+        console.log(`Interaction event type: %c${metric.attribution.interactionType}`, 'font-family: monospace');
+      } else if (metric.name == 'Interaction') {
+        console.log(`Interaction event type: %c${metric.attribution.interactionType} (${metric.entries[0].name})`, 'font-family: monospace');
       }
+
+      console.table([{
+        'Interaction subpart': 'Input delay',
+        'Time (ms)': Math.round(metric.attribution.inputDelay, 0),
+      },
+      {
+        'Interaction subpart': 'Processing duration',
+        'Time (ms)': Math.round(metric.attribution.processingDuration, 0),
+      },
+      {
+        'Interaction subpart': 'Presentation delay',
+        'Time (ms)': Math.round(metric.attribution.presentationDelay, 0),
+      }]);
 
       if (metric.attribution.longAnimationFrameEntries) {
 
@@ -375,19 +375,19 @@
         metric.attribution.navigationEntry) {
       console.log('TTFB navigation type:', metric.navigationType);
       console.table([{
-        'TTFB sub-part': 'Waiting duration',
+        'TTFB subpart': 'Waiting duration',
         'Time (ms)': Math.round(metric.attribution.waitingDuration, 0),
       }, {
-        'TTFB sub-part': 'Cache duration',
+        'TTFB subpart': 'Cache duration',
         'Time (ms)': Math.round(metric.attribution.cacheDuration, 0),
       }, {
-        'TTFB sub-part': 'DNS duration',
+        'TTFB subpart': 'DNS duration',
         'Time (ms)': Math.round(metric.attribution.dnsDuration, 0),
       }, {
-        'TTFB sub-part': 'Connection duration',
+        'TTFB subpart': 'Connection duration',
         'Time (ms)': Math.round(metric.attribution.connectionDuration, 0),
       }, {
-        'TTFB sub-part': 'Request duration',
+        'TTFB subpart': 'Request duration',
         'Time (ms)': Math.round(metric.attribution.requestDuration, 0),
       }]);
     }
@@ -492,19 +492,19 @@
       // debounce the broadcast of the metric.
       latestCLS = metric;
       debouncedCLSBroadcast();
-    }, { reportAllChanges: true });
+    }, { reportAllChanges: true, reportSoftNavs: true });
 
-    webVitals.onLCP(broadcastMetricsUpdates, { reportAllChanges: true });
+    webVitals.onLCP(broadcastMetricsUpdates, { reportAllChanges: true, reportSoftNavs: true });
     webVitals.onINP((metric) => {
       broadcastMetricsUpdates(metric)
-    }, { reportAllChanges: true });
-    webVitals.onFCP(broadcastMetricsUpdates, { reportAllChanges: true });
-    webVitals.onTTFB(broadcastMetricsUpdates, { reportAllChanges: true });
+    }, { reportAllChanges: true, durationThreshold: 0, reportSoftNavs: true });
+    webVitals.onFCP(broadcastMetricsUpdates, { reportAllChanges: true, reportSoftNavs: true });
+    webVitals.onTTFB(broadcastMetricsUpdates, { reportAllChanges: true, reportSoftNavs: true });
 
     if (enableLogging) {
-      onEachInteraction((metric) => {
+      webVitals.onInteraction((metric) => {
         logSummaryInfo(metric, false);
-      });
+      }, { reportAllChanges: true, durationThreshold: 0, reportSoftNavs: true });
     }
   }
 

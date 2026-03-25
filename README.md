@@ -89,7 +89,7 @@ Diagnostic info for each metric is logged as a console group prepended by the ex
 The kinds of diagnostic info varies per metric. For example, the LCP info includes:
 
 * A reference to the LCP element
-* A table of [LCP sub-part metrics](https://web.dev/articles/optimize-lcp#lcp_breakdown)
+* A table of [LCP subpart metrics](https://web.dev/articles/optimize-lcp#lcp_breakdown)
 * An optional warning if the tab was [loaded in the background](https://web.dev/articles/lcp#lcp-background)
 * The full attribution object from [web-vitals](https://github.com/GoogleChrome/web-vitals#attribution)
 
